@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GowithDaddy Partner Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF6B35',
+                        secondary: '#004E89',
+                        accent: '#F77F00',
+                        success: '#06D6A0',
+                        warning: '#FFD23F',
+                        danger: '#EF476F'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .metric-card {
+            transition: all 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+        
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .badge-published {
+            background-color: #D1FAE5;
+            color: #065F46;
+        }
+        
+        .badge-draft {
+            background-color: #FEF3C7;
+            color: #92400E;
+        }
+        
+        .badge-review {
+            background-color: #DBEAFE;
+            color: #1E40AF;
+        }
+        
+        .activity-item {
+            transition: background-color 0.2s ease;
+        }
+        
+        .activity-item:hover {
+            background-color: #F9FAFB;
+        }
+        
+        .table-row {
+            transition: background-color 0.2s ease;
+        }
+        
+        .table-row:hover {
+            background-color: #F9FAFB;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #FF6B35 0%, #F77F00 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(255, 107, 53, 0.3);
+        }
+        
+        .btn-secondary {
+            transition: all 0.2s ease;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #E5E7EB;
+        }
+        
+        .search-input:focus {
+            border-color: #FF6B35;
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+        
+        .trend-up {
+            color: #10B981;
+        }
+        
+        .trend-down {
+            color: #EF4444;
+        }
+        
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #F3F4F6;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #D1D5DB;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9CA3AF;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    
+    <!-- Header & Navigation Bar -->
+    <header class="bg-gradient-to-r from-secondary to-[#003666] text-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3">
+                    <div class="bg-white rounded-lg p-2">
+                        <i class="fas fa-plane-departure text-primary text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold">GowithDaddy</h1>
+                        <p class="text-xs text-gray-300">Partner Dashboard</p>
+                    </div>
+                </div>
+                
+                <!-- User Info & Actions -->
+                <div class="flex items-center space-x-4">
+                    <!-- Add New Package CTA -->
+                    <button onclick="addNewPackage()" class="btn-primary text-white px-6 py-3 rounded-lg font-semibold flex items-center space-x-2 shadow-lg">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Add New Package</span>
+                    </button>
+                    
+                    <!-- Profile -->
+                    <button onclick="goToProfile()" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg flex items-center space-x-2 transition">
+                        <i class="fas fa-user-cog"></i>
+                        <span class="hidden md:inline">Profile</span>
+                    </button>
+                    
+                    <!-- User Info -->
+                    <div class="border-l border-white/20 pl-4">
+                        <div class="text-right">
+                            <p class="font-semibold">Sarah Johnson</p>
+                            <p class="text-xs text-gray-300">Agency ID: GWD-2847</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Logout -->
+                    <button onclick="logout()" class="bg-danger hover:bg-red-600 px-4 py-2 rounded-lg flex items-center space-x-2 transition">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span class="hidden md:inline">Logout</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Dashboard Content -->
+    <main class="container mx-auto px-6 py-8">
+        
+        <!-- Welcome Section -->
+        <div class="mb-8">
+            <h2 class="text-3xl font-bold text-gray-800">Welcome back, Sarah! 👋</h2>
+            <p class="text-gray-600 mt-1">Here's what's happening with your travel business today.</p>
+        </div>
+
+        <!-- Performance Metrics -->
+        <section class="mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                
+                <!-- Metric 1: Total Clients -->
+                <div class="metric-card bg-white rounded-xl shadow-md p-6 border-l-4 border-primary">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-primary/10 p-3 rounded-lg">
+                            <i class="fas fa-users text-primary text-2xl"></i>
+                        </div>
+                        <span class="trend-up text-sm font-semibold flex items-center">
+                            <i class="fas fa-arrow-up mr-1"></i> +5%
+                        </span>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium mb-1">Clients Managed</h3>
+                    <p class="text-4xl font-bold text-gray-800">85</p>
+                    <p class="text-xs text-gray-500 mt-2">Month over Month</p>
+                </div>
+
+                <!-- Metric 2: Pending Commission -->
+                <div class="metric-card bg-white rounded-xl shadow-md p-6 border-l-4 border-success">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-success/10 p-3 rounded-lg">
+                            <i class="fas fa-dollar-sign text-success text-2xl"></i>
+                        </div>
+                        <span class="trend-up text-sm font-semibold flex items-center">
+                            <i class="fas fa-arrow-up mr-1"></i> +12%
+                        </span>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium mb-1">Pending Commission</h3>
+                    <p class="text-4xl font-bold text-gray-800">$7,240</p>
+                    <p class="text-xs text-gray-500 mt-2">This Quarter</p>
+                </div>
+
+                <!-- Metric 3: Active Packages -->
+                <div class="metric-card bg-white rounded-xl shadow-md p-6 border-l-4 border-accent">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-accent/10 p-3 rounded-lg">
+                            <i class="fas fa-luggage-cart text-accent text-2xl"></i>
+                        </div>
+                        <span class="text-gray-500 text-sm font-semibold">
+                            <i class="fas fa-minus mr-1"></i> 0%
+                        </span>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium mb-1">Active Packages</h3>
+                    <p class="text-4xl font-bold text-gray-800">12</p>
+                    <p class="text-xs text-gray-500 mt-2">Currently Published</p>
+                </div>
+
+                <!-- Metric 4: Bookings This Month -->
+                <div class="metric-card bg-white rounded-xl shadow-md p-6 border-l-4 border-secondary">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-secondary/10 p-3 rounded-lg">
+                            <i class="fas fa-check-circle text-secondary text-2xl"></i>
+                        </div>
+                        <span class="trend-up text-sm font-semibold flex items-center">
+                            <i class="fas fa-arrow-up mr-1"></i> +18%
+                        </span>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium mb-1">Bookings This Month</h3>
+                    <p class="text-4xl font-bold text-gray-800">9</p>
+                    <p class="text-xs text-gray-500 mt-2">Successful Conversions</p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- My Packages Section (2/3 width) -->
+            <section class="lg:col-span-2">
+                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                    
+                    <!-- Section Header -->
+                    <div class="bg-gradient-to-r from-gray-50 to-white px-6 py-5 border-b border-gray-200">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-800 flex items-center">
+                                    <i class="fas fa-suitcase text-primary mr-3"></i>
+                                    My Travel Packages
+                                </h3>
+                                <p class="text-sm text-gray-600 mt-1">Manage and track all your customized packages</p>
+                            </div>
+                            <button onclick="addNewPackage()" class="btn-primary text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center space-x-2">
+                                <i class="fas fa-plus"></i>
+                                <span>Create</span>
+                            </button>
+                        </div>
+                        
+                        <!-- Search & Filter -->
+                        <div class="flex items-center space-x-4">
+                            <div class="flex-1 relative">
+                                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <input type="text" 
+                                       id="packageSearch" 
+                                       onkeyup="searchPackages()" 
+                                       placeholder="Search packages by name..." 
+                                       class="search-input w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none transition">
+                            </div>
+                            <select class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-primary transition">
+                                <option>All Status</option>
+                                <option>Published</option>
+                                <option>Draft</option>
+                                <option>Needs Review</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Packages Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full" id="packagesTable">
+                            <thead class="bg-gray-50 border-b border-gray-200">
+                                <tr>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable(0)">
+                                        Package Name <i class="fas fa-sort ml-1"></i>
+                                    </th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable(1)">
+                                        Status <i class="fas fa-sort ml-1"></i>
+                                    </th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable(2)">
+                                        Clients Assigned <i class="fas fa-sort ml-1"></i>
+                                    </th>
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                        Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                
+                                <!-- Package Row 1 -->
+                                <tr class="table-row">
+                                    <td class="px-6 py-4">
+                                        <a href="#" onclick="viewPackage('bali-retreat')" class="font-semibold text-primary hover:text-accent transition flex items-center">
+                                            <i class="fas fa-umbrella-beach mr-2 text-gray-400"></i>
+                                            Bali Luxury Retreat
+                                        </a>
+                                        <p class="text-xs text-gray-500 mt-1">7 Days • All-Inclusive</p>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="badge badge-published">Published</span>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center">
+                                            <span class="font-bold text-lg text-gray-800">23</span>
+                                            <span class="ml-2 text-xs text-gray-500">clients</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center space-x-2">
+                                            <button onclick="editPackage('bali-retreat')" class="btn-secondary px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition" title="Edit">
+                                                <i class="fas fa-edit text-gray-600"></i>
+                                            </button>
+                                            <button onclick="sharePackage('bali-retreat')" class="btn-secondary px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition" title="Share Link">
+                                                <i class="fas fa-share-alt text-gray-600"></i>
+                                            </button>
+                                            <button onclick="duplicatePackage('bali-retreat')" class="btn-secondary px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition" title="Duplicate">
+                                                <i class="fas fa-copy text-gray-600"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Package Row 2 -->
+                                <tr class="table-row">
+                                    <td class="px-6 py-4">
+                                        <a href="#" onclick="viewPackage('europe-adventure')" class="font-semibold text-primary hover:text-accent transition flex items-center">
+                                            <i class="fas fa-castle mr-2 text-gray-400"></i>
+                                            Europe Grand Adventure
+                                        </a>
+                                        <p class="text-xs text-gray-500 mt-1">14 Days • Multi-City</p>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="badge badge-published">Published</span>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center">
+                                            <span class="font-bold text-lg text-gray-800">18</span>
+                                            <span class="ml-2 text-xs text-gray-500">clients</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center space-x-2">
+                                            <button onclick="editPackage('europe-adventure')" class="btn-secondary px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition" title="Edit">
+                                                <i class="fas fa-edit text-gray-600"></i>
+                                            </button>
+                                            <button onclick="sharePackage('europe-adventure')" class="btn-secondary px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition" title="Share Link">
+                                                <i class="fas fa-share-alt text-gray-600"></i>
+                                            </button>
+                                            <button onclick="duplicatePackage('europe-adventure')" class="btn-secondary px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition" title="Duplicate">
+                                                <i class="fas fa-copy text-gray-600"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Package Row 3 -->
+                                <tr class="table-row">
+                                    <td class="px-6 py-4">
+                                        <a href="#" onclick="viewPackage('dubai-luxury')" class="font-semibold text-primary hover:text-accent transition flex items-center">
+                                            <i class="fas fa-city mr-2 text-gray-400"></i>
+                                            Dubai Luxury Experience
+                                        </a>
+                                        <p class="text-xs text-gray-500 mt-1">5 Days • Premium Hotels</p>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="badge badge-draft">Draft</span>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center">
+                                            <span class="font-bold text-lg text-gray-800">8</span>
+                                            <span class="ml-2 text-xs text-gray-500">clients</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center space-x-2">
+                                            <button onclick="editPackage('dubai-luxury')" class="btn-secondary px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition" title="Edit">
+                                                <i class="fas fa-edit text-gray-600"></i>
+                                            </button>
+                                            <button onclick="sharePackage('dubai-luxury')" class="btn-secondary px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition" title="Share Link">
+                                                <i class="fas fa-share-alt text-gray-600"></i>
+                                            </button>
+                                            <button onclick="duplicatePackage('dubai-luxury')" class="btn-secondary px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition" title="Duplicate">
+                                                <i class="fas fa-copy text-gray-600"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Package Row 4 -->
+                                <tr class="table-row">
+                                    <td class="px-6 py-4">
+                                        <a href="#" onclick="viewPackage('maldives-honeymoon')" class="font-semibold text-primary hover:text-accent transition flex items-center">
+                                            <i class="fas fa-heart mr-2 text-gray-400"></i>
+                                            Maldives Honeymoon Special
+                                        </a>
+                                        <p class="text-xs text-gray-500 mt-1">6 Days • Romantic Getaway</p>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="badge badge-published">Published</span>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center">
+                                            <span class="font-bold text-lg text-gray-800">15</span>
+                                            <span class="ml-2 text-xs text-gray-500">clients</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center space-x-2">
+                                            <button onclick="editPackage('maldives-honeymoon')" class="btn-secondary px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition" title="Edit">
+                                                <i class="fas fa-edit text-gray-600"></i>
+                                            </button>
+                                            <button onclick="sharePackage('maldives-honeymoon')" class="btn-secondary px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition" title="Share Link">
+                                                <i class="fas fa-share-alt text-gray-600"></i>
+                                            </button>
+                                            <button onclick="duplicatePackage('maldives-honeymoon')" class="btn-secondary px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition" title="Duplicate">
+                                                <i class="fas fa-copy text-gray-600"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Package Row 5 -->
+                                <tr class="table-row">
+                                    <td class="px-6 py-4">
+                                        <a href="#" onclick="viewPackage('thailand-explorer')" class="font-semibold text-primary hover:text-accent transition flex items-center">
+                                            <i class="fas fa-pagoda mr-2 text-gray-400"></i>
+                                            Thailand Explorer
+                                        </a>
+                                        <p class="text-xs text-gray-500 mt-1">10 Days • Cultural Tour</p>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="badge badge-review">Needs Review</span>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center">
+                                            <span class="font-bold text-lg text-gray-800">12</span>
+                                            <span class="ml-2 text-xs text-gray-500">clients</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center space-x-2">
+                                            <button onclick="editPackage('thailand-explorer')" class="btn-secondary px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition" title="Edit">
+                                                <i class="fas fa-edit text-gray-600"></i>
+                                            </button>
+                                            <button onclick="sharePackage('thailand-explorer')" class="btn-secondary px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition" title="Share Link">
+                                                <i class="fas fa-share-alt text-gray-600"></i>
+                                            </button>
+                                            <button onclick="duplicatePackage('thailand-explorer')" class="btn-secondary px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition" title="Duplicate">
+                                                <i class="fas fa-copy text-gray-600"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Package Row 6 -->
+                                <tr class="table-row">
+                                    <td class="px-6 py-4">
+                                        <a href="#" onclick="viewPackage('swiss-alps')" class="font-semibold text-primary hover:text-accent transition flex items-center">
+                                            <i class="fas fa-mountain mr-2 text-gray-400"></i>
+                                            Swiss Alps Adventure
+                                        </a>
+                                        <p class="text-xs text-gray-500 mt-1">8 Days • Mountain Resort</p>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="badge badge-published">Published</span>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center">
+                                            <span class="font-bold text-lg text-gray-800">9</span>
+                                            <span class="ml-2 text-xs text-gray-500">clients</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center space-x-2">
+                                            <button onclick="editPackage('swiss-alps')" class="btn-secondary px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition" title="Edit">
+                                                <i class="fas fa-edit text-gray-600"></i>
+                                            </button>
+                                            <button onclick="sharePackage('swiss-alps')" class="btn-secondary px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition" title="Share Link">
+                                                <i class="fas fa-share-alt text-gray-600"></i>
+                                            </button>
+                                            <button onclick="duplicatePackage('swiss-alps')" class="btn-secondary px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition" title="Duplicate">
+                                                <i class="fas fa-copy text-gray-600"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+                        <div class="text-sm text-gray-600">
+                            Showing <span class="font-semibold">1-6</span> of <span class="font-semibold">12</span> packages
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button class="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-100 transition">
+                                Previous
+                            </button>
+                            <button class="px-3 py-1 bg-primary text-white rounded-lg text-sm font-semibold">
+                                1
+                            </button>
+                            <button class="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-100 transition">
+                                2
+                            </button>
+                            <button class="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-100 transition">
+                                Next
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- Sidebar: Client Activity & Resources (1/3 width) -->
+            <aside class="space-y-6">
+                
+                <!-- Client Activity Feed -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="bg-gradient-to-r from-gray-50 to-white px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-bold text-gray-800 flex items-center">
+                            <i class="fas fa-chart-line text-success mr-2"></i>
+                            Recent Client Activity
+                        </h3>
+                        <p class="text-xs text-gray-600 mt-1">Live updates from your clients</p>
+                    </div>
+                    
+                    <div class="divide-y divide-gray-100">
+                        
+                        <!-- Activity Item 1 -->
+                        <div class="activity-item px-6 py-4 cursor-pointer">
+                            <div class="flex items-start space-x-3">
+                                <div class="bg-blue-100 p-2 rounded-full flex-shrink-0">
+                                    <i class="fas fa-eye text-blue-600 text-sm"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm text-gray-800">
+                                        <span class="font-semibold">Jane D.</span> viewed 
+                                        <span class="text-primary font-medium">"Bali Retreat"</span>
+                                    </p>
+                                    <p class="text-xs text-gray-500 mt-1">5 minutes ago</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Activity Item 2 -->
+                        <div class="activity-item px-6 py-4 cursor-pointer">
+                            <div class="flex items-start space-x-3">
+                                <div class="bg-accent/20 p-2 rounded-full flex-shrink-0">
+                                    <i class="fas fa-edit text-accent text-sm"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm text-gray-800">
+                                        <span class="font-semibold">Mark T.</span> requested customization for 
+                                        <span class="text-primary font-medium">"Europe Adventure"</span>
+                                    </p>
+                                    <p class="text-xs text-gray-500 mt-1">1 hour ago</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Activity Item 3 -->
+                        <div class="activity-item px-6 py-4 cursor-pointer">
+                            <div class="flex items-start space-x-3">
+                                <div class="bg-success/20 p-2 rounded-full flex-shrink-0">
+                                    <i class="fas fa-user-plus text-success text-sm"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm text-gray-800">
+                                        New Client Lead: <span class="font-semibold">Sarah K.</span> assigned to you
+                                    </p>
+                                    <p class="text-xs text-gray-500 mt-1">2 hours ago</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Activity Item 4 -->
+                        <div class="activity-item px-6 py-4 cursor-pointer">
+                            <div class="flex items-start space-x-3">
+                                <div class="bg-success/20 p-2 rounded-full flex-shrink-0">
+                                    <i class="fas fa-check-circle text-success text-sm"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm text-gray-800">
+                                        <span class="font-semibold">Robert L.</span> confirmed booking for 
+                                        <span class="text-primary font-medium">"Maldives Honeymoon"</span>
+                                    </p>
+                                    <p class="text-xs text-gray-500 mt-1">3 hours ago</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Activity Item 5 -->
+                        <div class="activity-item px-6 py-4 cursor-pointer">
+                            <div class="flex items-start space-x-3">
+                                <div class="bg-purple-100 p-2 rounded-full flex-shrink-0">
+                                    <i class="fas fa-comment text-purple-600 text-sm"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm text-gray-800">
+                                        <span class="font-semibold">Emily R.</span> left a review on 
+                                        <span class="text-primary font-medium">"Swiss Alps"</span>
+                                    </p>
+                                    <p class="text-xs text-gray-500 mt-1">5 hours ago</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Activity Item 6 -->
+                        <div class="activity-item px-6 py-4 cursor-pointer">
+                            <div class="flex items-start space-x-3">
+                                <div class="bg-blue-100 p-2 rounded-full flex-shrink-0">
+                                    <i class="fas fa-share text-blue-600 text-sm"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm text-gray-800">
+                                        <span class="font-semibold">David M.</span> shared 
+                                        <span class="text-primary font-medium">"Dubai Luxury"</span> with a friend
+                                    </p>
+                                    <p class="text-xs text-gray-500 mt-1">Yesterday</p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                        <button class="w-full text-center text-sm text-primary font-semibold hover:text-accent transition">
+                            View All Activity <i class="fas fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Agency Resources -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="bg-gradient-to-r from-gray-50 to-white px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-bold text-gray-800 flex items-center">
+                            <i class="fas fa-life-ring text-secondary mr-2"></i>
+                            Agency Resources
+                        </h3>
+                        <p class="text-xs text-gray-600 mt-1">Tools and support for your success</p>
+                    </div>
+                    
+                    <div class="p-6 space-y-3">
+                        
+                        <!-- Resource Link 1 -->
+                        <a href="#" onclick="openResource('training')" class="flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition group">
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-primary/10 p-2 rounded-lg">
+                                    <i class="fas fa-graduation-cap text-primary"></i>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-800 group-hover:text-primary transition">Training & Guides</p>
+                                    <p class="text-xs text-gray-500">Learn best practices</p>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-400 group-hover:text-primary transition"></i>
+                        </a>
+
+                        <!-- Resource Link 2 -->
+                        <a href="#" onclick="openResource('marketing')" class="flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition group">
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-accent/10 p-2 rounded-lg">
+                                    <i class="fas fa-bullhorn text-accent"></i>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-800 group-hover:text-accent transition">Marketing Assets</p>
+                                    <p class="text-xs text-gray-500">Promotional materials</p>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-400 group-hover:text-accent transition"></i>
+                        </a>
+
+                        <!-- Resource Link 3 -->
+                        <a href="#" onclick="openResource('support')" class="flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition group">
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-success/10 p-2 rounded-lg">
+                                    <i class="fas fa-headset text-success"></i>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-800 group-hover:text-success transition">Contact Support</p>
+                                    <p class="text-xs text-gray-500">Get help anytime</p>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-400 group-hover:text-success transition"></i>
+                        </a>
+
+                        <!-- Resource Link 4 -->
+                        <a href="#" onclick="openResource('analytics')" class="flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition group">
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-secondary/10 p-2 rounded-lg">
+                                    <i class="fas fa-chart-bar text-secondary"></i>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-800 group-hover:text-secondary transition">Analytics Dashboard</p>
+                                    <p class="text-xs text-gray-500">Detailed reports</p>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-400 group-hover:text-secondary transition"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <!-- Quick Stats Card -->
+                <div class="bg-gradient-to-br from-primary to-accent rounded-xl shadow-md p-6 text-white">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold">Your Performance</h3>
+                        <i class="fas fa-trophy text-2xl opacity-50"></i>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm opacity-90">Conversion Rate</span>
+                            <span class="font-bold text-lg">24.5%</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm opacity-90">Avg. Deal Size</span>
+                            <span class="font-bold text-lg">$3,420</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm opacity-90">Client Satisfaction</span>
+                            <span class="font-bold text-lg">4.8/5.0</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-white/20">
+                        <p class="text-xs opacity-75">You're in the top 15% of partners! 🎉</p>
+                    </div>
+                </div>
+
+            </aside>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-12">
+        <div class="container mx-auto px-6 py-6">
+            <div class="flex flex-col md:flex-row items-center justify-between text-sm text-gray-600">
+                <p>&copy; 2024 GowithDaddy. All rights reserved.</p>
+                <div class="flex items-center space-x-6 mt-4 md:mt-0">
+                    <a href="#" class="hover:text-primary transition">Privacy Policy</a>
+                    <a href="#" class="hover:text-primary transition">Terms of Service</a>
+                    <a href="#" class="hover:text-primary transition">Help Center</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Functions -->
+    <script>
+        // Navigation Functions
+        function addNewPackage() {
+            window.location.href = 'addPackage.html';
+        }
+
+        function goToProfile() {
+            alert('👤 Navigating to Profile Settings...\n\nHere you can edit your personal information, agency details, payment settings, and preferences.');
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                alert('🔒 Logging out securely...\n\nYou will be redirected to the login page.');
+                // window.location.href = '/login';
+            }
+        }
+
+        // Package Management Functions
+        function viewPackage(packageId) {
+            alert(`📦 Viewing Package: ${packageId}\n\nThis would open a detailed view of the package with all information, assigned clients, and performance metrics.`);
+            event.preventDefault();
+        }
+
+        function editPackage(packageId) {
+            alert(`✏️ Editing Package: ${packageId}\n\nThis would open the package editor where you can modify details, pricing, itinerary, and more.`);
+        }
+
+        function sharePackage(packageId) {
+            const shareUrl = `https://gowithDaddy.com/packages/${packageId}`;
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                alert(`🔗 Share Link Copied!\n\n${shareUrl}\n\nThe package link has been copied to your clipboard. Share it with your clients!`);
+            }).catch(() => {
+                alert(`🔗 Share Link:\n\n${shareUrl}\n\nCopy this link to share with your clients.`);
+            });
+        }
+
+        function duplicatePackage(packageId) {
+            if (confirm(`📋 Duplicate this package?\n\nThis will create a copy of "${packageId}" that you can customize.`)) {
+                alert('✅ Package duplicated successfully!\n\nThe new package has been created as a draft. You can now edit it.');
+            }
+        }
+
+        // Search Functionality
+        function searchPackages() {
+            const input = document.getElementById('packageSearch');
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById('packagesTable');
+            const rows = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < rows.length; i++) {
+                const packageName = rows[i].getElementsByTagName('td')[0];
+                if (packageName) {
+                    const textValue = packageName.textContent || packageName.innerText;
+                    if (textValue.toLowerCase().indexOf(filter) > -1) {
+                        rows[i].style.display = '';
+                    } else {
+                        rows[i].style.display = 'none';
+                    }
+                }
+            }
+        }
+
+        // Sort Table Function
+        let sortDirection = {};
+        
+        function sortTable(columnIndex) {
+            const table = document.getElementById('packagesTable');
+            const tbody = table.getElementsByTagName('tbody')[0];
+            const rows = Array.from(tbody.getElementsByTagName('tr'));
+            
+            // Initialize sort direction for this column
+            if (!sortDirection[columnIndex]) {
+                sortDirection[columnIndex] = 'asc';
+            }
+            
+            // Toggle direction
+            const currentDirection = sortDirection[columnIndex];
+            const newDirection = currentDirection === 'asc' ? 'desc' : 'asc';
+            sortDirection[columnIndex] = newDirection;
+            
+            rows.sort((a, b) => {
+                const aValue = a.getElementsByTagName('td')[columnIndex].textContent.trim();
+                const bValue = b.getElementsByTagName('td')[columnIndex].textContent.trim();
+                
+                // For numeric columns (Clients Assigned)
+                if (columnIndex === 2) {
+                    const aNum = parseInt(aValue);
+                    const bNum = parseInt(bValue);
+                    return newDirection === 'asc' ? aNum - bNum : bNum - aNum;
+                }
+                
+                // For text columns
+                if (newDirection === 'asc') {
+                    return aValue.localeCompare(bValue);
+                } else {
+                    return bValue.localeCompare(aValue);
+                }
+            });
+            
+            // Reorder rows in table
+            rows.forEach(row => tbody.appendChild(row));
+        }
+
+        // Resource Links
+        function openResource(resourceType) {
+            const messages = {
+                'training': '📚 Opening Training Center...\n\nAccess video tutorials, guides, and best practices for managing your travel business.',
+                'marketing': '🎨 Opening Marketing Assets...\n\nDownload brochures, social media templates, email templates, and promotional materials.',
+                'support': '💬 Opening Support Center...\n\nContact our support team via chat, email, or phone. We\'re here 24/7 to help!',
+                'analytics': '📊 Opening Analytics Dashboard...\n\nView detailed reports on your performance, client behavior, and revenue trends.'
+            };
+            alert(messages[resourceType]);
+            event.preventDefault();
+        }
+
+        // Initialize tooltips and interactive elements
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('✅ GowithDaddy Partner Dashboard Loaded Successfully');
+            
+            // Add smooth scroll behavior
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+            });
+        });
+
+        // Simulated real-time updates (for demo purposes)
+        setInterval(() => {
+            // This would normally fetch real-time data from your backend
+            console.log('Checking for updates...');
+        }, 30000); // Check every 30 seconds
+    </script>
+
+</body>
+</html>
