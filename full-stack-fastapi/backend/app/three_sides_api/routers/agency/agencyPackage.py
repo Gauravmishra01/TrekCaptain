@@ -11,6 +11,8 @@ import time
 from boto3.dynamodb.conditions import Key
 from decimal import Decimal
 import boto3
+from boto3.dynamodb.conditions import Attr
+from fastapi import Query
 
 
 router = APIRouter()
@@ -30,12 +32,16 @@ class PackageItineraryDay(BaseModel):
     day: int
     title: str
     description: str
+class CategoryTag(BaseModel): 
+    category_id: str 
+    category_name: str
+
 
 
 class AgencyTrekPackageCreate(BaseModel):
     agency_id: str
     trek_id: str
-
+    packege_name: str
     base_price_rupee: float
     description: str
 
@@ -48,6 +54,8 @@ class AgencyTrekPackageCreate(BaseModel):
     total_nights: int
 
     itinerary: List[PackageItineraryDay]
+    category: List[CategoryTag] = None
+
 
 #-------------------- CREATE AGENCY TREK PACKAGE --------------------
 @router.post(
@@ -79,7 +87,9 @@ def create_agency_trek_package(payload: AgencyTrekPackageCreate):
                 "total_nights": payload.total_nights,
 
                 "itinerary": [day.dict() for day in payload.itinerary],
-
+                   # ✅ SEARCH & FILTER FRIENDLY
+                "category_ids": [cat.category_id for cat in payload.category] if payload.category else [],
+                "category_names": [cat.category_name for cat in payload.category] if payload.category else [],
                 "status": "ACTIVE",
                 "created_at": int(time.time())
             }
@@ -225,3 +235,49 @@ def get_agency_trek_package_full_details(package_id: str):
         "package": convert_decimal(package),
         "batches": convert_decimal(batches)
     }
+
+#-------------------- GET Package by Category ID  --------------------
+
+@router.get(
+    "/agency/trek-packages/by-category",
+    status_code=status.HTTP_200_OK,
+    tags=["agency-trek-packages"]
+)
+def get_packages_by_category(
+    category_id: str = Query(..., description="Category ID to filter packages")
+):
+    """
+    Find agency trek packages by category_id
+    """
+
+    try:
+        table = get_dynamodb_resource().Table("AgencyTrekPackages")
+
+        response = table.scan(
+            FilterExpression=Attr("category_ids").contains(category_id)
+        )
+
+        items = response.get("Items", [])
+
+        # Decimal → float
+        def convert_decimal(obj):
+            if isinstance(obj, list):
+                return [convert_decimal(i) for i in obj]
+            if isinstance(obj, dict):
+                return {k: convert_decimal(v) for k, v in obj.items()}
+            if isinstance(obj, Decimal):
+                return float(obj)
+            return obj
+
+        items = convert_decimal(items)
+
+        return {
+            "count": len(items),
+            "packages": items
+        }
+
+    except ClientError as e:
+        raise HTTPException(
+            status_code=500,
+            detail=e.response["Error"]["Message"]
+        )

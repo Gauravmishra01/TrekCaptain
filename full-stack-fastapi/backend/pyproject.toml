@@ -78,3 +78,6 @@ sort = "-Cover"
 
 [tool.coverage.html]
 show_contexts = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]

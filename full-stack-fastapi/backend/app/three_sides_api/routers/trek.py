@@ -6,7 +6,16 @@ import boto3
 from botocore.exceptions import ClientError
 from decimal import Decimal
 
+from pydantic import BaseModel
+from typing import Optional, List
+from pydantic import Field
+from boto3.dynamodb.conditions import Attr
+from fastapi import Query
+
+
 router = APIRouter()
+
+
 
 
 class TrekCreateRequest(BaseModel):
@@ -19,6 +28,9 @@ class TrekCreateRequest(BaseModel):
     difficulty_level: str
     description: str
     image: List[str] = Field(default_factory=list)
+    category_id: str
+    category_name: str
+
 
 
 def get_dynamodb_resource():
@@ -54,6 +66,8 @@ def add_trek(payload: TrekCreateRequest):
         "difficulty_level": payload.difficulty_level,
         "description": payload.description,
         "image": payload.image,
+        "category_id": payload.category_id,
+        "category_name": payload.category_name,
         "created_at": int(__import__("datetime").datetime.utcnow().timestamp()),
     }
 
@@ -109,6 +123,46 @@ def get_all_treks():
             )
             items.extend(response.get("Items", []))
 
+        items = convert_decimal(items)
+
+        return {
+            "count": len(items),
+            "treks": items
+        }
+
+    except ClientError as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"DynamoDB error: {exc.response.get('Error', {}).get('Message')}"
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=str(exc)
+        )
+
+
+@router.get(
+    "/treks/by-category",
+    status_code=status.HTTP_200_OK,
+    tags=["treks"]
+)
+def get_treks_by_category(
+    category_id: str = Query(..., description="Category ID")
+):
+    """
+    Fetch treks by category_id (no pagination)
+    """
+
+    try:
+        dynamodb = get_dynamodb_resource()
+        table = dynamodb.Table("TravelTreks")
+
+        response = table.scan(
+            FilterExpression=Attr("category_id").eq(category_id)
+        )
+
+        items = response.get("Items", [])
         items = convert_decimal(items)
 
         return {
