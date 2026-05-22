@@ -1,10 +1,13 @@
-from sqlmodel import Session, create_engine, select
+from sqlmodel import SQLModel, Session, create_engine, select
+import os
 
 from app import crud
 from app.core.config import settings
 from app.models import User, UserCreate
 
-engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI))
+# Prefer explicit DATABASE_URL environment variable (useful for tests/local)
+database_url = os.getenv("DATABASE_URL") or str(settings.SQLALCHEMY_DATABASE_URI)
+engine = create_engine(str(database_url))
 
 
 # make sure all SQLModel models are imported (app.models) before initializing DB
@@ -13,6 +16,8 @@ engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI))
 
 
 def init_db(session: Session) -> None:
+    SQLModel.metadata.create_all(engine)
+
     # Tables should be created with Alembic migrations
     # But if you don't want to use migrations, create
     # the tables un-commenting the next lines

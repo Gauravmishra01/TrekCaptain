@@ -202,73 +202,6 @@
         </p>
       </div>
 
-      <!-- Recent Agency Registrations -->
-      <section class="mb-8">
-        <div
-          class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200"
-        >
-          <div
-            class="bg-gradient-to-r from-gray-50 to-white px-6 py-5 border-b border-gray-200 flex items-center justify-between gap-4"
-          >
-            <div>
-              <h3 class="text-2xl font-bold text-gray-800 flex items-center">
-                <i class="fas fa-inbox text-primary mr-3"></i>
-                Recent Agency Registrations
-              </h3>
-              <p class="text-sm text-gray-600 mt-1">
-                Live records saved from the partner registration form
-              </p>
-            </div>
-            <button
-              onclick="loadRegistrations()"
-              class="btn-secondary px-4 py-2 rounded-lg text-sm font-semibold border border-gray-300"
-            >
-              <i class="fas fa-rotate-right mr-2"></i>
-              Refresh
-            </button>
-          </div>
-
-          <div class="overflow-x-auto">
-            <table class="w-full">
-              <thead class="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th
-                    class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                  >
-                    Trade Name
-                  </th>
-                  <th
-                    class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                  >
-                    Contact
-                  </th>
-                  <th
-                    class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                  >
-                    Country
-                  </th>
-                  <th
-                    class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                  >
-                    Submitted
-                  </th>
-                </tr>
-              </thead>
-              <tbody
-                id="registrationsTableBody"
-                class="divide-y divide-gray-200 bg-white"
-              >
-                <tr>
-                  <td colspan="4" class="px-6 py-10 text-center text-gray-500">
-                    Loading registrations...
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
       <!-- Performance Metrics -->
       <section class="mb-8">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -1096,16 +1029,16 @@
           alert(
             "🔒 Logging out securely...\n\nYou will be redirected to the login page.",
           );
-          // window.location.href = '/login';
+          window.location.href = "index.html";
         }
       }
 
       // Package Management Functions
-      function viewPackage(packageId) {
+      function viewPackage(packageId, event) {
         alert(
           `📦 Viewing Package: ${packageId}\n\nThis would open a detailed view of the package with all information, assigned clients, and performance metrics.`,
         );
-        event.preventDefault();
+        event?.preventDefault();
       }
 
       function editPackage(packageId) {
@@ -1208,7 +1141,7 @@
       }
 
       // Resource Links
-      function openResource(resourceType) {
+      function openResource(resourceType, event) {
         const messages = {
           training:
             "📚 Opening Training Center...\n\nAccess video tutorials, guides, and best practices for managing your travel business.",
@@ -1220,70 +1153,7 @@
             "📊 Opening Analytics Dashboard...\n\nView detailed reports on your performance, client behavior, and revenue trends.",
         };
         alert(messages[resourceType]);
-        event.preventDefault();
-      }
-
-      async function loadRegistrations() {
-        const tbody = document.getElementById("registrationsTableBody");
-        if (!tbody) {
-          return;
-        }
-
-        tbody.innerHTML = `
-                <tr>
-                    <td colspan="4" class="px-6 py-10 text-center text-gray-500">Loading registrations...</td>
-                </tr>
-            `;
-
-        try {
-          const response = await fetch(
-            "http://127.0.0.1:8000/api/v1/agencies/registrations?limit=10",
-          );
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-          }
-
-          const registrations = await response.json();
-
-          if (!registrations.length) {
-            tbody.innerHTML = `
-                        <tr>
-                            <td colspan="4" class="px-6 py-10 text-center text-gray-500">No saved registrations yet.</td>
-                        </tr>
-                    `;
-            return;
-          }
-
-          tbody.innerHTML = registrations
-            .map(
-              (registration) => `
-                    <tr class="table-row">
-                        <td class="px-6 py-4">
-                            <p class="font-semibold text-gray-800">${registration.trade_name || "Untitled Agency"}</p>
-                            <p class="text-xs text-gray-500 mt-1">${registration.legal_name || "No legal name provided"}</p>
-                        </td>
-                        <td class="px-6 py-4">
-                            <p class="text-sm text-gray-800">${registration.contact_name || "Unknown contact"}</p>
-                            <p class="text-xs text-gray-500">${registration.contact_email || "No email"}</p>
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="badge badge-review">${registration.country || "Unknown"}</span>
-                        </td>
-                        <td class="px-6 py-4 text-sm text-gray-600">
-                            ${registration.created_at ? new Date(registration.created_at).toLocaleString() : "Just now"}
-                        </td>
-                    </tr>
-                `,
-            )
-            .join("");
-        } catch (error) {
-          console.error("Failed to load registrations", error);
-          tbody.innerHTML = `
-                    <tr>
-                        <td colspan="4" class="px-6 py-10 text-center text-red-600">Unable to load registrations right now.</td>
-                    </tr>
-                `;
-        }
+        event?.preventDefault();
       }
 
       // Initialize tooltips and interactive elements
@@ -1299,8 +1169,6 @@
               target.scrollIntoView({ behavior: "smooth" });
             }
           });
-
-          loadRegistrations();
         });
       });
 

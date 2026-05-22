@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoyageBuilder - Create New Travel Package</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#007BFF',
+                        secondary: '#00A878',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Shared Styles */
+        .tag-input {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            min-height: 42px;
+        }
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            background: #007BFF;
+            color: white;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            flex-shrink: 0; 
+        }
+        
+        /* Specific Styles for Search/Autocomplete */
+        .autocomplete-container {
+            position: relative;
+        }
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: white;
+            border: 1px solid #d1d5db;
+            border-top: none;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 10;
+            border-radius: 0 0 0.375rem 0.375rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .autocomplete-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .autocomplete-item:hover {
+            background-color: #f3f4f6;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans antialiased">
+    
+    <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2">
+                        <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                            <i class="fas fa-plane-departure text-white text-lg"></i>
+                        </div>
+                        <span class="text-2xl font-bold text-gray-900">VoyageBuilder</span>
+                    </div>
+                    <div class="h-8 w-px bg-gray-300"></div>
+                    <h1 class="text-xl font-semibold text-gray-700">Create New Travel Package</h1>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <button class="px-5 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors">
+                        <i class="fas fa-save mr-2"></i>Save Draft
+                    </button>
+                    <button class="px-5 py-2.5 bg-primary text-white rounded-lg hover:bg-blue-600 font-medium transition-colors shadow-sm">
+                        <i class="fas fa-rocket mr-2"></i>Publish Package
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-8">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-5 flex items-center gap-2">
+                    <i class="fas fa-info-circle text-primary"></i>
+                    Package Overview
+                </h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                            Package Name <span class="text-red-500">*</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            placeholder="e.g., 7-Day Luxury Bali Retreat"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                        >
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                            Package URL Slug
+                        </label>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm text-gray-500">voyagebuilder.com/packages/</span>
+                            <input 
+                                type="text" 
+                                placeholder="bali-retreat-7day"
+                                class="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                            >
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                            Travel State (Select multiple)
+                        </label>
+                        <div class="tag-input" id="travelStateTagsContainer">
+                            <select class="border-0 outline-none flex-1 min-w-[120px] text-sm" id="travelStateSelectDropdown">
+                                <option value="" disabled selected>Loading states...</option>
+                            </select>
+                        </div>
+                        <p class="text-xs text-red-500 mt-1 hidden" id="stateError">⚠️ Could not load states. Check API connection.</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                            Travel Select City (Search)
+                        </label>
+                        <div class="tag-input" id="travelCityTagsContainer">
+                            <div class="autocomplete-container flex-1 min-w-[120px]">
+                                <input 
+                                    type="text" 
+                                    placeholder="Add City..." 
+                                    class="border-0 outline-none w-full text-sm py-0 h-full" 
+                                    id="citySearchInput"
+                                    autocomplete="off"
+                                >
+                                <div class="autocomplete-dropdown hidden" id="citySuggestionsDropdown">
+                                    </div>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Start typing city name to search (e.g., Shimla, Rishikesh)</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                            Travel Style (Select multiple)
+                        </label>
+                        <div class="tag-input" id="travelStyleTags">
+                            <button type="button" class="tag" data-value="luxury">
+                                Luxury <i class="fas fa-times text-xs cursor-pointer"></i>
+                            </button>
+                            <button type="button" class="tag" data-value="adventure">
+                                Adventure <i class="fas fa-times text-xs cursor-pointer"></i>
+                            </button>
+                            <select class="border-0 outline-none flex-1 min-w-[120px] text-sm" id="travelStyleSelect">
+                                <option value="">Add style...</option>
+                                <option value="luxury">Luxury</option>
+                                <option value="adventure">Adventure</option>
+                                <option value="family">Family</option>
+                                <option value="solo">Solo Travel</option>
+                                <option value="romantic">Romantic</option>
+                                <option value="cultural">Cultural</option>
+                                <option value="beach">Beach</option>
+                                <option value="wellness">Wellness</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                            Duration (Days) <span class="text-red-500">*</span>
+                        </label>
+                        <input 
+                            type="number" 
+                            min="1"
+                            placeholder="7"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                        >
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-5 flex items-center gap-2">
+                <i class="fas fa-route text-primary"></i>
+                Itinerary Builder
+            </h2>
+            <div id="itineraryContainer" class="space-y-4">...</div>
+        </div>
+
+    </main>
+
+    <footer class="sticky bottom-0 bg-white border-t border-gray-200 shadow-lg">
+        </footer>
+
+    <script>
+        // --- API Endpoints ---
+        const API_BASE_URL = 'http://127.0.0.1:8001/api/v1/geo';
+        
+        // --- Core Utility Functions ---
+
+        function createAndAppendTag(containerId, value, text, removeCallback) {
+            const container = document.getElementById(containerId);
+            const selectDropdown = container.querySelector('select'); // Used for style/positioning in state/style selectors
+            const inputField = container.querySelector('input'); // Used for style/positioning in city search
+            
+            const existingTags = Array.from(container.querySelectorAll('.tag')).map(t => t.dataset.value);
+            if (existingTags.includes(value)) {
+                if (selectDropdown) selectDropdown.value = '';
+                if (inputField) inputField.value = '';
+                return;
+            }
+
+            const newTag = document.createElement('button');
+            newTag.type = 'button';
+            newTag.className = 'tag';
+            newTag.dataset.value = value;
+            newTag.innerHTML = `${text} <i class="fas fa-times text-xs cursor-pointer"></i>`;
+            
+            newTag.querySelector('.fa-times').addEventListener('click', function() {
+                newTag.remove();
+                if (removeCallback) {
+                    removeCallback(value);
+                }
+            });
+            
+            const insertionPoint = selectDropdown || inputField || container.lastElementChild;
+            container.insertBefore(newTag, insertionPoint);
+            
+            if (selectDropdown) selectDropdown.value = '';
+            if (inputField) inputField.value = '';
+        }
+
+        // --- State/City API and UI Logic ---
+
+        async function fetchAndPopulateStates() {
+            const stateSelect = document.getElementById('travelStateSelectDropdown');
+            const errorElement = document.getElementById('stateError');
+            stateSelect.innerHTML = '';
+            errorElement.classList.add('hidden');
+
+            try {
+                // IMPORTANT: If this fetch fails, check your API server's CORS configuration!
+                const response = await fetch(`${API_BASE_URL}/states`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                const data = await response.json();
+                
+                // Add default 'Select state...' option
+                let defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.textContent = 'Select state...';
+                defaultOption.disabled = true;
+                defaultOption.selected = true;
+                stateSelect.appendChild(defaultOption);
+
+                // Populate state options
+                data.forEach(state => {
+                    const option = document.createElement('option');
+                    option.value = state.state_name;
+                    option.textContent = state.state_name;
+                    stateSelect.appendChild(option);
+                });
+
+            } catch (error) {
+                console.error('Error loading states:', error);
+                stateSelect.innerHTML = '<option value="" disabled selected>Error loading states. Check API status.</option>';
+                errorElement.classList.remove('hidden');
+            }
+        }
+
+        async function searchCities(query) {
+            if (query.length < 2) {
+                document.getElementById('citySuggestionsDropdown').classList.add('hidden');
+                return [];
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/search?city_query=${query}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Error searching cities:', error);
+                return [];
+            }
+        }
+
+        function renderCitySuggestions(cities) {
+            const dropdown = document.getElementById('citySuggestionsDropdown');
+            const cityTagsContainer = document.getElementById('travelCityTagsContainer');
+            const existingTags = Array.from(cityTagsContainer.querySelectorAll('.tag')).map(t => t.dataset.value);
+
+            dropdown.innerHTML = '';
+
+            if (cities.length === 0) {
+                dropdown.classList.add('hidden');
+                return;
+            }
+
+            cities.forEach(city => {
+                const tagValue = `${city.state_name} - ${city.city_name}`;
+                const tagText = `${city.city_name} (${city.state_name})`;
+
+                // Skip city if already tagged
+                if (existingTags.includes(tagValue)) return;
+                
+                const item = document.createElement('div');
+                item.className = 'autocomplete-item text-sm text-gray-700';
+                item.textContent = tagText;
+                item.dataset.value = tagValue;
+                item.dataset.text = tagText;
+
+                item.addEventListener('click', function() {
+                    createAndAppendTag('travelCityTagsContainer', this.dataset.value, this.dataset.text);
+                    document.getElementById('citySearchInput').value = '';
+                    dropdown.classList.add('hidden');
+                });
+
+                dropdown.appendChild(item);
+            });
+
+            if (dropdown.children.length > 0) {
+                dropdown.classList.remove('hidden');
+            } else {
+                 dropdown.classList.add('hidden');
+            }
+        }
+
+        // --- Event Listener Initialization ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchAndPopulateStates();
+            // Initialize other components (Travel Style, Itinerary, etc.)
+
+            // 1. Travel State Tag Handler
+            document.getElementById('travelStateSelectDropdown').addEventListener('change', function() {
+                const stateName = this.value;
+                if (stateName) {
+                    createAndAppendTag('travelStateTagsContainer', stateName, stateName, null); // No specific remove callback needed here
+                }
+            });
+
+            // 2. City Search Input Handler (Debounced)
+            let searchTimeout;
+            const citySearchInput = document.getElementById('citySearchInput');
+            
+            citySearchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                const query = this.value.trim();
+                
+                searchTimeout = setTimeout(async () => {
+                    if (query.length >= 2) {
+                        const results = await searchCities(query);
+                        renderCitySuggestions(results);
+                    } else {
+                         document.getElementById('citySuggestionsDropdown').classList.add('hidden');
+                    }
+                }, 300); // 300ms debounce
+            });
+
+            // Hide dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.autocomplete-container')) {
+                    document.getElementById('citySuggestionsDropdown').classList.add('hidden');
+                }
+            });
+            
+            // 3. Travel Style Tag Handler (retained logic)
+            document.getElementById('travelStyleSelect').addEventListener('change', function() {
+                if (this.value) {
+                    const text = this.options[this.selectedIndex].text;
+                    const value = this.value;
+                    createAndAppendTag('travelStyleTags', value, text);
+                }
+            });
+
+            // Add listener for existing static tags (Luxury, Adventure)
+            document.querySelectorAll('.tag .fa-times').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.closest('.tag').remove();
+                });
+            });
+
+            // Assuming placeholder logic for itinerary and other sections remains the same
+        });
+
+        // --- Other existing utility functions (toggleDay, removeDay, etc.) would go here ---
+    </script>
+
+</body>
+</html>

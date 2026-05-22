@@ -1,8 +1,13 @@
 from collections.abc import Generator
 
+import os
 import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session, delete
+
+# Ensure tests run with a local SQLite DB when DATABASE_URL is not provided
+if not os.getenv("DATABASE_URL"):
+    os.environ["DATABASE_URL"] = "sqlite:///./tests.db"
 
 from app.core.config import settings
 from app.core.db import engine, init_db
